@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 from provider.oauth2.forms import ClientAuthForm
 from provider.oauth2.models import Client, AccessToken
 
@@ -64,7 +64,7 @@ class AccessTokenBackend(object):
     def authenticate(self, access_token=None, client=None):
         try:
             return AccessToken.objects.get(token=access_token,
-                expiry__gt=datetime.now(), client=client)
+                expiry__gt=timezone.now(), client=client)
         except AccessToken.DoesNotExist:
             return None
 

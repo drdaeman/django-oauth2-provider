@@ -4,7 +4,7 @@ these models with fields and and methods to be compatible with the views in
 :attr:`provider.views`.
 """
 
-from datetime import datetime
+from django.utils import timezone
 from django.contrib.auth.models import User
 from django.db import models
 from provider import constants
@@ -102,7 +102,7 @@ class AccessToken(models.Model):
         """
         Return the number of seconds until this token expires.
         """
-        return (self.expires - datetime.now()).seconds
+        return (self.expires - timezone.now()).seconds
 
 class RefreshToken(models.Model):
     """

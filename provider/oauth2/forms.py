@@ -11,7 +11,7 @@ from provider.constants import RESPONSE_TYPE_CHOICES, SCOPES
 from provider.forms import OAuthForm, OAuthValidationError
 from provider import scope
 from provider.oauth2.models import Client, Grant, RefreshToken
-from provider.scope import SCOPE_NAMES, SCOPE_NAME_DICT
+from provider.scope import SCOPE_NAME_CHOICES
 
 class ClientForm(forms.ModelForm):
     """
@@ -50,7 +50,11 @@ class ScopeChoiceField(forms.ChoiceField):
     Custom form field that seperates values on space as defined in :draft:`3.3`.
     """
     widget = forms.SelectMultiple
-    
+
+    def __init__(self, choices=(), *args, **kwargs):
+        choices = [(t[0], t[2] if len(t) > 2 else t[1]) for t in choices]
+        super(ScopeChoiceField, self).__init__(choices=choices, *args, **kwargs)
+
     def to_python(self, value):
         if not value:
             return []
@@ -123,7 +127,7 @@ class AuthorizationRequestForm(ScopeMixin, OAuthForm):
     Opaque - just pass back to the client for validation.
     """
     
-    scope = ScopeChoiceField(choices=SCOPE_NAMES, required=False)
+    scope = ScopeChoiceField(choices=SCOPE_NAME_CHOICES, required=False)
     """
     The scope that the authorization should include.
     """
@@ -166,7 +170,7 @@ class AuthorizationForm(ScopeMixin, OAuthForm):
     A form used to ask the resource owner for authorization of a given client.
     """
     authorize = forms.BooleanField(required=False)
-    scope = ScopeChoiceField(choices=SCOPE_NAMES, required=False)    
+    scope = ScopeChoiceField(choices=SCOPE_NAME_CHOICES, required=False)
 
     def save(self, **kwargs):
         authorize = self.cleaned_data.get('authorize')
@@ -183,7 +187,7 @@ class RefreshTokenGrantForm(ScopeMixin, OAuthForm):
     Checks and returns a refresh token.
     """
     refresh_token = forms.CharField(required=False)
-    scope = ScopeChoiceField(choices=SCOPE_NAMES, required=False)
+    scope = ScopeChoiceField(choices=SCOPE_NAME_CHOICES, required=False)
     
     def clean_refresh_token(self):
         token = self.cleaned_data.get('refresh_token')
@@ -215,7 +219,7 @@ class AuthorizationCodeGrantForm(ScopeMixin, OAuthForm):
     Check and return an authorization grant.
     """
     code = forms.CharField(required=False)
-    scope = ScopeChoiceField(choices=SCOPE_NAMES, required=False)
+    scope = ScopeChoiceField(choices=SCOPE_NAME_CHOICES, required=False)
     
     def clean_code(self):
         code = self.cleaned_data.get('code')
@@ -250,7 +254,7 @@ class PasswordGrantForm(ScopeMixin, OAuthForm):
     """
     username = forms.CharField(required=False)
     password = forms.CharField(required=False)
-    scope = ScopeChoiceField(choices=SCOPE_NAMES, required=False)
+    scope = ScopeChoiceField(choices=SCOPE_NAME_CHOICES, required=False)
         
     def clean_username(self):
         username = self.cleaned_data.get('username')

@@ -9,10 +9,24 @@ See :class:`provider.scope.to_int` on how scopes are combined.
 """
 
 from provider.constants import SCOPES
+from django.core.exceptions import ImproperlyConfigured
 
-SCOPE_NAMES = [(name, name) for (value, name) in SCOPES]
-SCOPE_NAME_DICT = dict([(name, value) for (value, name) in SCOPES])
-SCOPE_VALUE_DICT = dict([(value, name) for (value, name) in SCOPES])
+
+SCOPE_NAME_DICT = {}
+SCOPE_INT_CHOICES = []
+SCOPE_NAME_CHOICES = []
+
+for t in SCOPES:
+    if len(t) not in (2, 3):
+        raise ImproperlyConfigured("OAUTH_SCOPES must be an iterable of 2- or 3-tuples.")
+    SCOPE_INT_CHOICES.append((t[0], t[2] if len(t) > 2 else t[1]))
+    SCOPE_NAME_CHOICES.append((t[1], t[2] if len(t) > 2 else t[1]))
+    SCOPE_NAME_DICT[t[1]] = t[0]
+del t
+
+SCOPE_INT_CHOICES = tuple(SCOPE_INT_CHOICES)
+SCOPE_NAME_CHOICES = tuple(SCOPE_NAME_CHOICES)
+
 
 def check(wants, has):
     """
@@ -76,6 +90,20 @@ def to_names(scope):
     ]
 # Keep it compatible
 names = to_names
+
+def to_choices(scope):
+    """
+    Return a list of human-friendly scope descriptions (or names, if there're none)
+    as defined in :attr:`provider.constants.SCOPES` for a given scope integer.
+
+        >>> assert [('read', 'Read your data'), ('write', 'Write your data')] \
+            == provider.scope.to_choices(provider.constants.READ_WRITE)
+    """
+    return [
+        (name, description)
+        for (value, name, description) in SCOPES
+        if check(value, scope)
+    ]
 
 def to_int(*names, **kwargs):
     """

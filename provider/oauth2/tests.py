@@ -6,7 +6,7 @@ from provider.oauth2.forms import ClientForm
 from provider.oauth2.models import Client, Grant, AccessToken
 from provider.oauth2.backends import BasicClientBackend, \
     RequestParamsClientBackend, AccessTokenBackend
-from provider.templatetags.scope import scopes
+from provider.templatetags.scope import scopes, scopes_choice
 from provider.testcases import AuthorizationTest, AccessTokenTest, \
     EnforceSecureTest
 
@@ -84,6 +84,15 @@ class ScopeTest(TestCase, Mixin):
         names.sort()
         
         self.assertEqual('read write', ' '.join(names))
+
+    def test_template_filter_human(self):
+        choices = scopes_choice(constants.READ)
+        self.assertEqual('Read your data', ' '.join(c for _, c in choices))
+
+        choices = scope.to_choices(constants.READ_WRITE)
+        choices.sort()
+        self.assertEqual('read=Read your data; write=Write your data',
+                         '; '.join('%s=%s' % (n, d) for n, d in choices))
 
 class AuthBackendTest(TestCase, Mixin):
     fixtures = ['test_oauth2']

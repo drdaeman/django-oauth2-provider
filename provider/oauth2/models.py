@@ -11,7 +11,7 @@ except ImportError:
 from django.contrib.auth.models import User
 from django.db import models
 from provider import constants, scope
-from provider.constants import CLIENT_TYPES, SCOPES
+from provider.constants import CLIENT_TYPES
 from provider.oauth2.managers import AccessTokenManager
 from provider.utils import short_token, long_token, get_token_expiry, \
     get_code_expiry
@@ -94,7 +94,7 @@ class AccessToken(models.Model):
     token = models.CharField(max_length=255, default=long_token)
     client = models.ForeignKey(Client)
     expires = models.DateTimeField(default=get_token_expiry)
-    scope = models.IntegerField(default=constants.SCOPES[0][0], choices=constants.SCOPES)
+    scope = models.IntegerField(default=scope.SCOPE_INT_CHOICES[0][0], choices=scope.SCOPE_INT_CHOICES)
 
     objects = AccessTokenManager()
     

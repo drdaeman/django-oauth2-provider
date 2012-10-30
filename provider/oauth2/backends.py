@@ -1,4 +1,7 @@
-from django.utils import timezone
+try:
+    from django.utils import timezone
+except ImportError:
+    from datetime import datetime as timezone
 from provider.oauth2.forms import ClientAuthForm
 from provider.oauth2.models import Client, AccessToken
 

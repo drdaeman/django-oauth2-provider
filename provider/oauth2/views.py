@@ -1,5 +1,8 @@
 from datetime import timedelta
-from django.utils import timezone
+try:
+    from django.utils import timezone
+except ImportError:
+    from datetime import datetime as timezone
 from django.core.urlresolvers import reverse
 from provider.oauth2.backends import BasicClientBackend, RequestParamsClientBackend
 from provider.oauth2.forms import AuthorizationRequestForm, AuthorizationForm, \

@@ -1,4 +1,7 @@
-from django.utils import timezone
+try:
+    from django.utils import timezone
+except ImportError:
+    from datetime import datetime as timezone
 from django.conf import settings
 from provider.constants import EXPIRE_DELTA, EXPIRE_CODE_DELTA
 import hashlib

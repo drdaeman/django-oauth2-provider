@@ -4,7 +4,10 @@ these models with fields and and methods to be compatible with the views in
 :attr:`provider.views`.
 """
 
-from django.utils import timezone
+try:
+    from django.utils import timezone
+except ImportError:
+    from datetime import datetime as timezone
 from django.contrib.auth.models import User
 from django.db import models
 from provider import constants

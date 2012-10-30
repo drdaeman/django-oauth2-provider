@@ -1,4 +1,7 @@
-from django.utils import timezone
+try:
+    from django.utils import timezone
+except ImportError:
+    from datetime import datetime as timezone
 from django.db import models
 
 class AccessTokenManager(models.Manager):

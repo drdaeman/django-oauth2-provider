@@ -1,4 +1,7 @@
-from django.utils import timezone
+try:
+    from django.utils import timezone
+except ImportError:
+    from datetime import datetime as timezone
 from django import forms
 from django.contrib.auth import authenticate
 from django.utils.encoding import smart_unicode

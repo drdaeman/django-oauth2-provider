@@ -10,7 +10,7 @@ except ImportError:
     from datetime import datetime as timezone
 from django.contrib.auth.models import User
 from django.db import models
-from provider import constants
+from provider import constants, scope
 from provider.constants import CLIENT_TYPES, SCOPES
 from provider.oauth2.managers import AccessTokenManager
 from provider.utils import short_token, long_token, get_token_expiry, \
@@ -106,6 +106,15 @@ class AccessToken(models.Model):
         Return the number of seconds until this token expires.
         """
         return (self.expires - timezone.now()).seconds
+
+    def has_scope(self, required):
+        """
+        Return `True` if the token satisfies the required scope.
+        `required` may be provided as either the integer or string representation.
+        """
+        if not isinstance(required, int):
+            required = scopes.SCOPE_NAME_DICT[required]
+        return scope.check(required, self.scope)
 
 class RefreshToken(models.Model):
     """

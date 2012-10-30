@@ -1,5 +1,5 @@
-# Create your views here.
-from datetime import datetime, timedelta
+from datetime import timedelta
+from django.utils import timezone
 from django.core.urlresolvers import reverse
 from provider.oauth2.backends import BasicClientBackend, RequestParamsClientBackend
 from provider.oauth2.forms import AuthorizationRequestForm, AuthorizationForm, \
@@ -101,7 +101,7 @@ class AccessTokenView(AccessTokenView):
         )
     
     def invalidate_grant(self, grant):
-        grant.expires = datetime.now() - timedelta(days=1)
+        grant.expires = timezone.now() - timedelta(days=1)
         grant.save()
         
     def invalidate_refresh_token(self, rt):
@@ -109,5 +109,5 @@ class AccessTokenView(AccessTokenView):
         rt.save()
     
     def invalidate_access_token(self, at):
-        at.expires = datetime.now() - timedelta(days=1)
+        at.expires = timezone.now() - timedelta(days=1)
         at.save()

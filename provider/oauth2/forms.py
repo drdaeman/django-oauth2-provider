@@ -1,4 +1,4 @@
-from datetime import datetime
+from django.utils import timezone
 from django import forms
 from django.contrib.auth import authenticate
 from django.utils.encoding import smart_unicode
@@ -222,7 +222,7 @@ class AuthorizationCodeGrantForm(ScopeMixin, OAuthForm):
         
         try:
             self.cleaned_data['grant'] = Grant.objects.get(
-                code=code, client=self.client, expires__gt=datetime.now())
+                code=code, client=self.client, expires__gt=timezone.now())
         except Grant.DoesNotExist:
             raise OAuthValidationError({'error': 'invalid_grant'})
         

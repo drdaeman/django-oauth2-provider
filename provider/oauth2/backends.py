@@ -1,6 +1,7 @@
 from datetime import datetime
 from provider.oauth2.forms import ClientAuthForm
 from provider.oauth2.models import Client, AccessToken
+from provider.utils import base64_decode
 
 class BaseBackend(object):
     """
@@ -26,8 +27,8 @@ class BasicClientBackend(object):
             return None
         
         try:
-            basic, base64 = auth.split(' ')
-            client_id, client_secret = base64.decode('base64').split(':')
+            basic, base64_data = auth.split(' ')
+            client_id, client_secret = base64_decode(base64_data).split(':')
             
             form = ClientAuthForm({'client_id': client_id, 'client_secret': client_secret})
             

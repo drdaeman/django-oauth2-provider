@@ -5,6 +5,10 @@ from django.utils.html import escape
 from provider import constants
 import json
 import urlparse
+try:
+    from django.utils.encoding import smart_text
+except ImportError:
+    from django.utils.encoding import smart_unicode as smart_text
 
 class TestMixin(object):
     
@@ -51,7 +55,7 @@ class AuthorizationTest(TestCase, TestMixin):
         response = self.client.get(self.auth_url2())
         
         self.assertEqual(400, response.status_code)
-        self.assertTrue("An unauthorized client tried to access your resources." in response.content)
+        self.assertTrue("An unauthorized client tried to access your resources." in smart_text(response.content))
 
     def test_authorization_rejects_invalid_client_id(self):
         self.login()
@@ -59,7 +63,7 @@ class AuthorizationTest(TestCase, TestMixin):
         response = self.client.get(self.auth_url2())
         
         self.assertEqual(400, response.status_code)
-        self.assertTrue("An unauthorized client tried to access your resources." in response.content)
+        self.assertTrue("An unauthorized client tried to access your resources." in smart_text(response.content))
 
     def test_authorization_requires_response_type(self):
         self.login()
@@ -67,7 +71,7 @@ class AuthorizationTest(TestCase, TestMixin):
         response = self.client.get(self.auth_url2())
         
         self.assertEqual(400, response.status_code)
-        self.assertTrue(escape(u"No 'response_type' supplied.") in response.content)
+        self.assertTrue(escape(u"No 'response_type' supplied.") in smart_text(response.content))
         
     def test_authorization_requires_supported_response_type(self):
         self.login()
@@ -75,7 +79,7 @@ class AuthorizationTest(TestCase, TestMixin):
         response = self.client.get(self.auth_url2())
 
         self.assertEqual(400, response.status_code)
-        self.assertTrue(escape(u"'unsupported' is not a supported response type.") in response.content)
+        self.assertTrue(escape(u"'unsupported' is not a supported response type.") in smart_text(response.content))
 
         response = self.client.get(self.auth_url() + '?client_id=%s&response_type=code' % self.get_client().client_id)
         response = self.client.get(self.auth_url2())
@@ -94,7 +98,7 @@ class AuthorizationTest(TestCase, TestMixin):
         response = self.client.get(self.auth_url2())
         
         self.assertEqual(400, response.status_code)
-        self.assertTrue(escape(u"The requested redirect didn't match the client settings.") in response.content)
+        self.assertTrue(escape(u"The requested redirect didn't match the client settings.") in smart_text(response.content))
         
         response = self.client.get(self.auth_url() + '?client_id=%s&response_type=code&redirect_uri=%s' % (
             self.get_client().client_id,
@@ -110,7 +114,7 @@ class AuthorizationTest(TestCase, TestMixin):
         response = self.client.get(self.auth_url2())
         
         self.assertEqual(400, response.status_code)
-        self.assertTrue(escape(u"'invalid' is not a valid scope.") in response.content)
+        self.assertTrue(escape(u"'invalid' is not a valid scope.") in smart_text(response.content))
         
         response = self.client.get(self.auth_url() + '?client_id=%s&response_type=code&scope=%s' % (
             self.get_client().client_id,
@@ -170,7 +174,7 @@ class AccessTokenTest(TestCase, TestMixin):
             'client_secret': self.get_client().client_secret, })
         
         self.assertEqual(400, response.status_code, response.content)
-        self.assertEqual('invalid_client', json.loads(response.content)['error'])
+        self.assertEqual('invalid_client', json.loads(smart_text(response.content))['error'])
         
     def test_fetching_access_token_with_invalid_grant(self):
         self.login()
@@ -183,7 +187,7 @@ class AccessTokenTest(TestCase, TestMixin):
             'code': '123'})
         
         self.assertEqual(400, response.status_code, response.content)
-        self.assertEqual('invalid_grant', json.loads(response.content)['error'])
+        self.assertEqual('invalid_grant', json.loads(smart_text(response.content))['error'])
 
     def _login_authorize_get_token(self):
         self.login()
@@ -201,7 +205,7 @@ class AccessTokenTest(TestCase, TestMixin):
         
         self.assertEqual(200, response.status_code, response.content)
         
-        return json.loads(response.content)
+        return json.loads(smart_text(response.content))
     
     def test_fetching_access_token_with_valid_grant(self):
         self._login_authorize_get_token()        
@@ -222,7 +226,7 @@ class AccessTokenTest(TestCase, TestMixin):
         })
         
         self.assertEqual(400, response.status_code)
-        self.assertEqual('unsupported_grant_type', json.loads(response.content)['error'],
+        self.assertEqual('unsupported_grant_type', json.loads(smart_text(response.content))['error'],
             response.content)
     
     def test_fetching_access_token_multiple_times(self):
@@ -236,7 +240,7 @@ class AccessTokenTest(TestCase, TestMixin):
             'code': code})
         
         self.assertEqual(400, response.status_code)
-        self.assertEqual('invalid_grant', json.loads(response.content)['error'])
+        self.assertEqual('invalid_grant', json.loads(smart_text(response.content))['error'])
         
     def test_escalating_the_scope(self):
         self.login()
@@ -251,7 +255,7 @@ class AccessTokenTest(TestCase, TestMixin):
             'scope': 'read write'})
         
         self.assertEqual(400, response.status_code)
-        self.assertEqual('invalid_scope', json.loads(response.content)['error'])
+        self.assertEqual('invalid_scope', json.loads(smart_text(response.content))['error'])
         
     def test_refreshing_an_access_token(self):
         token = self._login_authorize_get_token()
@@ -273,7 +277,7 @@ class AccessTokenTest(TestCase, TestMixin):
         })
         
         self.assertEqual(400, response.status_code)
-        self.assertEqual('invalid_grant', json.loads(response.content)['error'],
+        self.assertEqual('invalid_grant', json.loads(smart_text(response.content))['error'],
             response.content)
     
     def test_password_grant(self):
@@ -296,7 +300,7 @@ class AccessTokenTest(TestCase, TestMixin):
         })
         
         self.assertEqual(400, response.status_code, response.content)
-        self.assertEqual('invalid_grant', json.loads(response.content)['error'])
+        self.assertEqual('invalid_grant', json.loads(smart_text(response.content))['error'])
         
 
 class EnforceSecureTest(TestCase):
@@ -314,11 +318,11 @@ class EnforceSecureTest(TestCase):
         response = self.client.get(self.auth_url())
         
         self.assertEqual(400, response.status_code)
-        self.assertTrue("A secure connection is required." in response.content)
+        self.assertTrue("A secure connection is required." in smart_text(response.content))
         
     def test_access_token_enforces_SSL(self):
         response = self.client.post(self.access_token_url(), {})
 
         self.assertEqual(400, response.status_code)
-        self.assertTrue("A secure connection is required." in response.content)
+        self.assertTrue("A secure connection is required." in smart_text(response.content))
         

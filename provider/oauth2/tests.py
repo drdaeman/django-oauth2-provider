@@ -9,7 +9,7 @@ from provider.oauth2.backends import BasicClientBackend, \
 from provider.templatetags.scope import scopes
 from provider.testcases import AuthorizationTest, AccessTokenTest, \
     EnforceSecureTest
-
+from provider.utils import base64_encode
 
 class Mixin(object):
     def login(self):
@@ -92,9 +92,9 @@ class AuthBackendTest(TestCase, Mixin):
 
     def test_basic_client_backend(self):
         request = type('Request', (object,), {'META': {}})()
-        request.META['HTTP_AUTHORIZATION'] = "Basic " + "{0}:{1}".format(
+        request.META['HTTP_AUTHORIZATION'] = "Basic " + base64_encode("{0}:{1}".format(
             self.get_client().client_id, 
-            self.get_client().client_secret).encode('base64')
+            self.get_client().client_secret))
 
         self.assertEqual(BasicClientBackend().authenticate(request).id, 
                          2, "Didn't return the right client.")

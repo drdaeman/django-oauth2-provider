@@ -1,7 +1,10 @@
 from datetime import datetime
 from django import forms
 from django.contrib.auth import authenticate
-from django.utils.encoding import smart_unicode
+try:
+    from django.utils.encoding import smart_text
+except ImportError:
+    from django.utils.encoding import smart_unicode as smart_text
 from django.utils.translation import ugettext as _
 from provider import constants
 from provider.constants import RESPONSE_TYPE_CHOICES, SCOPES
@@ -56,7 +59,7 @@ class ScopeChoiceField(forms.ChoiceField):
             raise OAuthValidationError({'error': 'invalid_request'})
 
         # Split values into list
-        return u' '.join([smart_unicode(val) for val in value]).split(u' ')
+        return u' '.join([smart_text(val) for val in value]).split(u' ')
 
 
     def validate(self, value):

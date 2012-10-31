@@ -15,7 +15,7 @@ class TestMixin(object):
         response = self.client.get(url_func())
         response = self.client.get(self.auth_url2())
         
-        response = self.client.post(self.auth_url2(), {'authorize': True, 'scope': constants.SCOPES[0][1]})
+        response = self.client.post(self.auth_url2(), {'authorize': True, 'scope': 'read'})
         self.assertEqual(302, response.status_code, response.content)
         self.assertTrue(self.redirect_url() in response['Location'])
         
@@ -110,11 +110,10 @@ class AuthorizationTest(TestCase, TestMixin):
         response = self.client.get(self.auth_url2())
         
         self.assertEqual(400, response.status_code)
-        self.assertTrue(escape(u"'invalid' is not a valid scope.") in response.content)
+        self.assertTrue(escape(u"'invalid invalid2' is not one of the available scopes.") in response.content)
         
         response = self.client.get(self.auth_url() + '?client_id=%s&response_type=code&scope=%s' % (
-            self.get_client().client_id,
-            constants.SCOPES[0][1]))
+            self.get_client().client_id, 'read'))
         response = self.client.get(self.auth_url2())
         self.assertEqual(200, response.status_code)
 
@@ -124,7 +123,7 @@ class AuthorizationTest(TestCase, TestMixin):
         response = self.client.get(self.auth_url() + '?client_id=%s&response_type=code' % self.get_client().client_id)
         response = self.client.get(self.auth_url2())
         
-        response = self.client.post(self.auth_url2(), {'authorize': False, 'scope': constants.SCOPES[0][1]})
+        response = self.client.post(self.auth_url2(), {'authorize': False, 'scope': 'read'})
         self.assertEqual(302, response.status_code, response.content)
         self.assertTrue(self.redirect_url() in response['Location'])
         

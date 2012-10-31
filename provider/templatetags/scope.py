@@ -1,12 +1,13 @@
 from django import template
-from provider import scope
 
 register = template.Library()
 
 @register.filter
-def scopes(scope_int):
+def scopes(scopes):
     """ 
-    Wrapper around :attr:`provider.scope.names` to turn an int into a list
+    Wrapper around :attr:`provider.scope.names` to turn an Scope list into a list
     of scope names in templates.
+
+    Deprecated.
     """
-    return scope.to_names(scope_int)
+    return [s.name for s in scopes]

@@ -10,8 +10,8 @@ except ImportError:
     from datetime import datetime as timezone
 from django.contrib.auth.models import User
 from django.db import models
-from provider import constants, scope
-from provider.constants import CLIENT_TYPES, SCOPES
+from provider import constants
+from provider.constants import CLIENT_TYPES
 from provider.oauth2.managers import AccessTokenManager
 from provider.utils import short_token, long_token, get_token_expiry, \
     get_code_expiry
@@ -44,6 +44,18 @@ class Client(models.Model):
     def __unicode__(self):
         return self.redirect_uri
 
+class Scope(models.Model):
+    """
+    Default scope implementation.
+
+    Expected fields:
+
+    * :attr:`name`
+    * :attr:`description`
+    """
+    name = models.SlugField(max_length=32, primary_key=True)
+    description = models.TextField(blank=True)
+
 class Grant(models.Model):
     """
     Default grant implementation. A grant is a code that can be swapped for an
@@ -65,7 +77,7 @@ class Grant(models.Model):
     code = models.CharField(max_length=255, default=long_token)
     expires = models.DateTimeField(default=get_code_expiry)
     redirect_uri = models.CharField(max_length=255, blank=True)
-    scope = models.IntegerField(default=0)
+    scopes = models.ManyToManyField(Scope)
     
     def __unicode__(self):
         return self.code
@@ -94,7 +106,7 @@ class AccessToken(models.Model):
     token = models.CharField(max_length=255, default=long_token)
     client = models.ForeignKey(Client)
     expires = models.DateTimeField(default=get_token_expiry)
-    scope = models.IntegerField(default=constants.SCOPES[0][0], choices=constants.SCOPES)
+    scopes = models.ManyToManyField(Scope)
 
     objects = AccessTokenManager()
     
@@ -109,12 +121,9 @@ class AccessToken(models.Model):
 
     def has_scope(self, required):
         """
-        Return `True` if the token satisfies the required scope.
-        `required` may be provided as either the integer or string representation.
+        Return `True` if the token satisfies the :attr:`required` scope.
         """
-        if not isinstance(required, int):
-            required = scopes.SCOPE_NAME_DICT[required]
-        return scope.check(required, self.scope)
+        return self.scopes.filter().count(scope=required) > 0
 
 class RefreshToken(models.Model):
     """

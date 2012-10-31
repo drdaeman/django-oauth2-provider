@@ -58,5 +58,21 @@
         }, 
         "model": "auth.user", 
         "pk": 2
+    },
+    {
+        "fields": {
+            "name": "read",
+            "description": "Read your data"
+        },
+        "model": "oauth2.scope",
+        "pk": 1
+    },
+    {
+        "fields": {
+            "name": "write",
+            "description": "Write your data"
+        },
+        "model": "oauth2.scope",
+        "pk": 2
     }
 ]

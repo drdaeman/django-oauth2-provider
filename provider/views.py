@@ -6,7 +6,6 @@ from django.views.generic.base import TemplateView, View
 from provider import constants
 import json
 import urlparse
-from provider import scope
 
 class OAuthError(Exception):
     """
@@ -233,6 +232,7 @@ class Authorize(OAuthView, Mixin):
         # data and tell the resource owner. We will *not* redirect back to the 
         # URL.
         
+        assert 'error' in error, repr(error)
         if error['error'] in ['redirect_uri', 'unauthorized_client']:
             ctx.update(next='/')
             return self.render_to_response(ctx, **kwargs)
@@ -433,7 +433,7 @@ class AccessToken(OAuthView, Mixin):
                 'access_token': access_token.token,
                 'expires_in': access_token.get_expire_delta(),
                 'refresh_token': access_token.refresh_token.token,
-                'scope': ' '.join(scope.names(access_token.scope)),
+                'scope': ' '.join((scope.name for scope in access_token.scopes.all())),
             }), mimetype='application/json'
         )
     
@@ -444,8 +444,8 @@ class AccessToken(OAuthView, Mixin):
         """
         grant = self.get_authorization_code_grant(request, request.POST, client)
         
-        at = self.create_access_token(request, grant.user, grant.scope, client)
-        rt = self.create_refresh_token(request, grant.user, grant.scope, at, client)
+        at = self.create_access_token(request, grant.user, grant.scopes.all(), client)
+        rt = self.create_refresh_token(request, grant.user, grant.scopes.all(), at, client)
         
         self.invalidate_grant(grant)
         
@@ -461,8 +461,8 @@ class AccessToken(OAuthView, Mixin):
         self.invalidate_refresh_token(rt)
         self.invalidate_access_token(rt.access_token)
         
-        at = self.create_access_token(request, rt.user, rt.access_token.scope, client)
-        rt = self.create_refresh_token(request, at.user, at.scope, at, client)
+        at = self.create_access_token(request, rt.user, rt.access_token.scopes.all(), client)
+        rt = self.create_refresh_token(request, at.user, at.scopes.all(), at, client)
         
         return self.access_token_response(at)
     

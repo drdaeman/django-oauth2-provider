@@ -48,6 +48,8 @@ class Authorize(Authorize):
         grant.client = client
         grant.redirect_uri = client_data.get('redirect_uri', '')
         grant.save()
+        grant.scopes = form.cleaned_data.get('scope')
+        grant.save()
         return grant.code
 
 
@@ -89,14 +91,16 @@ class AccessTokenView(AccessTokenView):
             raise OAuthError(form.errors)
         return form.cleaned_data
         
-    def create_access_token(self, request, user, scope, client):
-        return AccessToken.objects.create(
+    def create_access_token(self, request, user, scopes, client):
+        at = AccessToken.objects.create(
             user=user,
             client=client,
-            scope=scope
         )
+        at.scopes = scopes
+        at.save()
+        return at
             
-    def create_refresh_token(self, request, user, scope, access_token, client):
+    def create_refresh_token(self, request, user, scopes, access_token, client):
         return RefreshToken.objects.create(
             user=user,
             access_token=access_token,
